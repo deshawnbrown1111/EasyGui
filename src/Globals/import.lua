@@ -21,7 +21,16 @@ return function(path)
             source = game:HttpGet(url)
         end
 
-        local module = loadstring(source, p)()
+        local func, err = loadstring(source, p)
+        if not func then
+            error("[Import Error] "..tostring(err))
+        end
+
+        local success, module = pcall(func)
+        if not success then
+            error("[Import Error] "..tostring(module))
+        end
+
         cache[p] = module
         return module
     end
