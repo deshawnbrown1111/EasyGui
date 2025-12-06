@@ -12,8 +12,15 @@ return function(path)
             return cache[p]
         end
 
-        local url = "https://raw.githubusercontent.com/" .. creator .. "/" .. rName .. "/main/Modules/" .. p .. ".lua"
+        local base = "https://raw.githubusercontent.com/" .. creator .. "/" .. rName .. "/main/"
+        local url = base .. "Modules/" .. p .. ".lua"
         local source = game:HttpGet(url)
+
+        if not source or source == "" then
+            url = base .. "Globals/" .. p .. ".lua"
+            source = game:HttpGet(url)
+        end
+
         local module = loadstring(source, p)()
         cache[p] = module
         return module
