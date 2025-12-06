@@ -1,51 +1,61 @@
-local RunService = game:GetService("RunService")
-local TweenService = game:GetService("TweenService")
-local Players = game:GetService("Players")
+local Service = import("service")
+
+local Players = Service.Players
+local RunService = Service.RunService
+local CoreGui = Service.CoreGui
+local TweenService = Service.TweenService
 
 local Core = {}
 Core._instances = {}
 Core._tweens = {}
 
-function Core.newScreen(name)
-	local screen = Instance.new("ScreenGui")
-	screen.Name = name or "EasyGui"
-	screen.ResetOnSpawn = false
-	return screen
+local function parentSafe(gui)
+	gui.Parent = CoreGui
+end
+
+function Core.newScreen(name, safe)
+	local success, result = pcall(function()
+		local screen = Instance.new("ScreenGui")
+		screen.Name = name or "EasyGui"
+		screen.IgnoreGuiInset = false
+		screen.ResetOnSpawn = false
+
+		if safe then
+			parentSafe(screen)
+		end
+
+		return screen
+	end)
+
+	if not success then
+		error("[*] Failed to create screen: " .. tostring(result))
+		return nil
+	end
+
+	Core._instances[("screen_%s"):format(name or "default")] = result
+	return result
 end
 
 function Core.tween(instance, props, info)
-	local info = info or TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-	local tween = TweenService:Create(instance, info, props)
+	local ti = info or TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	local tween = TweenService:Create(instance, ti, props)
+	Core._tweens[tween] = true
 	tween:Play()
 	return tween
 end
 
-function Core.center(frame)
-	frame.AnchorPoint = Vector2.new(0.5,0.5)
-	frame.Position = UDim2.fromScale(0.5,0.5)
+function Core.center(obj)
+	obj.AnchorPoint = Vector2.new(0.5, 0.5)
+	obj.Position = UDim2.fromScale(0.5, 0.5)
 end
 
-function Core.addToRegistry(k,v)
+function Core.addToRegistry(k, v)
 	Core._instances[k] = v
+	return v
 end
 
 function Core.removeFromRegistry(k)
 	Core._instances[k] = nil
-end
-
-function Core.getPlayerGui()
-	local player = Players.LocalPlayer
-	if not player then
-		local rs = RunService:IsClient()
-		if not rs then
-			return nil
-		end
-		repeat
-			player = Players.LocalPlayer
-			task.wait()
-		until player
-	end
-	return player:WaitForChild("PlayerGui")
 end
 
 return Core
