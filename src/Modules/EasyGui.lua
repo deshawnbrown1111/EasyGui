@@ -23,8 +23,9 @@ local function parentSafe(gui, safe)
 end
 
 function EasyGui.newScreen(name, safe)
+	local screen
 	local ok, res = pcall(function()
-		local screen = Instance.new("ScreenGui")
+		screen = Instance.new("ScreenGui")
 		screen.Name = name or "EasyGui"
 		screen.ResetOnSpawn = false
 		parentSafe(screen, safe)
@@ -33,8 +34,8 @@ function EasyGui.newScreen(name, safe)
 	if not ok then
 		error(tostring(res))
 	end
-	EasyGui._instances["screen_" .. (name or tostring(screen))] = res
-	return res
+	EasyGui._instances["screen_" .. (name or tostring(screen))] = screen
+	return screen
 end
 
 function EasyGui.tween(instance, props, info)
