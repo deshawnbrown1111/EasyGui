@@ -1,40 +1,20 @@
 return function(path)
     path = path:gsub("%.lua$", "")
-    local creator = "deshawnbrown1111"
-    local rName = "EasyGui"
-
+    local BASE = "https://raw.githubusercontent.com/deshawnbrown1111/EasyGui/refs/heads/main/src/"
     local cache = getgenv().__import_cache or {}
     getgenv().__import_cache = cache
 
-    local function import(p)
+    getgenv().import = getgenv().import or function(p)
         p = p:gsub("%.lua$", "")
         if cache[p] then
             return cache[p]
         end
-
-        local base = "https://raw.githubusercontent.com/" .. creator .. "/" .. rName .. "/main/"
-        local url = base .. "Modules/" .. p .. ".lua"
+        local url = BASE .. p .. ".lua"
         local source = game:HttpGet(url)
-
-        if not source or source == "" then
-            url = base .. "Globals/" .. p .. ".lua"
-            source = game:HttpGet(url)
-        end
-
-        local func, err = loadstring(source, p)
-        if not func then
-            error("[Import Error] "..tostring(err))
-        end
-
-        local success, module = pcall(func)
-        if not success then
-            error("[Import Error] "..tostring(module))
-        end
-
+        local module = loadstring(source, p)()
         cache[p] = module
         return module
     end
 
-    getgenv().import = import
-    return import(path)
+    return getgenv().import(path)
 end
